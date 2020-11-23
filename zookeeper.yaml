@@ -5,19 +5,22 @@ metadata:
   labels:
     app: zookeeper
 spec:
+#  type: LoadBalancer
   ports:
-  - port: 2181
-    name: tcp
-  clusterIP: None
+  - name: client
+    port: 2181
+  - name: server
+    port: 2888
+  - name: leader-election
+    port: 3888
   selector:
     app: zookeeper
 ---
 apiVersion: apps/v1
-kind: StatfulSet
+kind: Deployment
 metadata:
   name: zookeeper
 spec:
-  serviceName: "zookeeper"
   replicas: 1
   selector:
     matchLabels:
@@ -29,4 +32,14 @@ spec:
     spec:
       containers:
       - name: zookeeper
-      image: docker.io/confluentinc/cp-zookeeper:5.2.2
+        image: gcr.io/cit-262-fall/zookeeper
+      ports:
+      - name: client
+        port: 2181
+      - name: server
+        port: 2888
+      - name: leader-election
+        port: 3888
+      env:
+      - name: ZOOKEEPER_CLIENT_PORT
+        value: 2181
